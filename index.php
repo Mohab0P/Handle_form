@@ -1,5 +1,6 @@
 <?php
 session_start();
+define('COOKIE_EXPIRY', 30 * 24 * 60 * 60); 
 
 function clean_input($data) {
     $data = trim($data);
@@ -9,6 +10,7 @@ function clean_input($data) {
 }
 
 function validate_input(&$errors) {
+    global $remember_me;
     $name = clean_input($_POST['name']);
     $email = clean_input($_POST['email']);
     $phone = clean_input($_POST['phone']);
@@ -43,15 +45,24 @@ function validate_input(&$errors) {
         $_SESSION['phone'] = $phone;
         $_SESSION['message'] = $message;
 
+        if ($remember_me) {
+            setcookie("email", $email, time() + COOKIE_EXPIRY, "/"); // Set email cookie
+        } else {
+            setcookie("email", "", time() - 3600, "/"); // Clear cookie if "Remember Me" is not checked
+        }
         header("Location: success.php");
         exit();
     }
 }
 
 $errors = [];
+$remember_me = isset($_POST['remember_me']);
+
+$errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     validate_input($errors);
 }
+$email_value = isset($_COOKIE['email']) ? $_COOKIE['email'] : ($_POST['email'] ?? '');
 
 // if (!empty($errors)) {
 //     echo '<ul>';
@@ -99,6 +110,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             
             <button type="submit" class="w-full py-2 text-white border-2 rounded-lg transition ease-in-out delay-150 bg-blue-500 hover:-translate-y-1 hover:scale-110 hover:bg-blue-700 duration-300">Send</button>
+            <div class="mb-4">
+    <input type="checkbox" id="remember_me" name="remember_me">
+    <label for="remember_me" class="text-gray-700">Remember Me</label>
+</div>
+
         </form>  
     </div>
 </body>

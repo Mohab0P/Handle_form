@@ -1,5 +1,7 @@
 <?php
 session_start();
+
+
 if (!isset($_SESSION['name'], $_SESSION['email'], $_SESSION['phone'], $_SESSION['message'])) {
     header("Location: index.php");
     exit();
